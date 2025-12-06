@@ -21,6 +21,10 @@ var rollOfPaper = '@';
 var emptySpace = '.';
 
 // Part 1
+/*
+    For each position with roll of paper, follow the path and count rolls encountered
+    If less than 4 rolls encountered, count this position
+*/
 var startPositions = matrix
     .Where(kvp => kvp.Value == rollOfPaper)
     .Select(kvp => kvp.Key);
@@ -30,6 +34,9 @@ var result = startPositions
 Console.WriteLine($"Number of rolls of paper with less than 4 rolls sorrounding: {result}");
 
 // Part 2
+/*
+    Same as Part 1 but we iterate that process until we have no more rolls to remove
+*/
 var mutableMatrix = new Dictionary<Position, char>(matrix);
 int totalRemoved = 0;
 int removedInRound;
@@ -40,24 +47,33 @@ do
         .Where(kvp => kvp.Value == rollOfPaper)
         .Select(kvp => kvp.Key)
         .ToList();
-    
+
     var positionsToRemove = startPositions2
         .Where(pos => CountRollsInPath(pos, path, 0, mutableMatrix) < 4)
         .ToList();
-    
+
     removedInRound = positionsToRemove.Count;
     totalRemoved += removedInRound;
-    
+
     foreach (var pos in positionsToRemove)
     {
         mutableMatrix[pos] = emptySpace;
     }
-    
+
     //Console.WriteLine($"Removed {removedInRound} rolls in this round");
-    
+
 } while (removedInRound > 0);
 
 Console.WriteLine($"Total rolls removed: {totalRemoved}");
+
+// Part 2 optimization
+/*
+    For now we basicly brute force the solution as we check every position in each round
+    We could short-circuit some checks after we have more then 3 rolls encountered
+    On reddit we have some mentions of blured algorithms
+    Some of mine ideas would we to convert blocks to 0/1 and sum them to get count for each position
+        Also store what possitions are going to be removed to check the in first place to reduce unneccessary checks
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

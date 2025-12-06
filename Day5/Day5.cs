@@ -29,6 +29,10 @@ Console.WriteLine($"IDs: {idLines.Count}");
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 // Part 1 - Easy way
+/*
+    For each ID, check if it falls within any of the given ranges
+    We just need it to be in min one range
+*/
 var sw1 = Stopwatch.StartNew();
 var result = idLines.Count(id => rangeLines.Any(range => range.Contains(id)));
 sw1.Stop();
@@ -36,8 +40,13 @@ Console.WriteLine($"IDs found in ranges (Any): {result}");
 Console.WriteLine($"Time: {sw1.ElapsedMilliseconds}ms");
 
 // Maybe optimized way?? -- nope :D
+/*
+    For each ID, filter ranges where start is less than or equal to ID
+    Then check if any of the filtered ranges contain the ID
+    -- it appears to be slower than previous approach
+*/
 var sw2 = Stopwatch.StartNew();
-var result2 = idLines.Count(id => 
+var result2 = idLines.Count(id =>
     rangeLines
         .Where(range => id >= range.Start)
         .Any(range => id <= range.End)
@@ -49,10 +58,18 @@ Console.WriteLine($"Time: {sw2.ElapsedMilliseconds}ms");
 Console.WriteLine($"\nDifference: {Math.Abs(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds)}ms");
 
 // Part 2
+/*
+    Merge all overlapping ranges to minimize checks
+    We just iterate over all new ranges and overlapping ranges are merged into one
+    The starting key for this approach is to sort ranges by start value so we have less comparisons
+*/
+var sw3 = Stopwatch.StartNew();
 var listOfValidIds = new RangeList(rangeLines);
 listOfValidIds.MergeAll();
 
 var countOfIds = listOfValidIds.TotalCount();
+sw3.Stop();
+Console.WriteLine($"Time for merging ranges: {sw3.ElapsedMilliseconds}ms");
 Console.WriteLine($"\nTotal valid IDs after merging ranges2: {countOfIds}");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
