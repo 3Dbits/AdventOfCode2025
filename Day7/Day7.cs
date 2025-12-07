@@ -3,8 +3,9 @@ var lines = File.ReadAllLines("Day7.txt");
 int lineCount = lines.Length;
 var tachyonBeam = 'S';
 var splitter = '^';
+int startPos = lines[0].IndexOf(tachyonBeam);
 
-SortedSet<int> beamLocations = new() { lines[0].IndexOf(tachyonBeam) };
+SortedSet<int> beamLocations = new() { startPos };
 var caretPositions = new Dictionary<int, List<int>>();
 
 for (int i = 2; i < lineCount; i += 2)
@@ -55,6 +56,8 @@ Console.WriteLine($"Total beam splitters activated: {countOfBeamSplites}");
     We will use recursive approach
     Also we need to use memoization for avoid recomputing same states
 */
+var sw = System.Diagnostics.Stopwatch.StartNew();
+
 var memo = new Dictionary<(int row, int pos), long>();
 
 long CountBeamPaths(int row, int pos)
@@ -89,4 +92,42 @@ long CountBeamPaths(int row, int pos)
 }
 
 var totalBeamPaths = CountBeamPaths(2, lines[0].IndexOf(tachyonBeam));
+
+sw.Stop();
 Console.WriteLine($"Total distinct beam paths: {totalBeamPaths}");
+Console.WriteLine($"Part 2 Time: {sw.ElapsedMilliseconds}ms");
+
+// Part 2 optimization
+/*
+    Easy algorithm that i foun on reddit:
+    take beam as number and on split sum all overlap beams
+    On last line sum all beams to get total paths
+*/
+
+var beamPaths = Enumerable.Range(0, lineCount)
+    .ToDictionary(i => i, i => 0L);
+
+beamPaths[startPos] = 1;
+
+var beamLocations2 = new SortedSet<int> { startPos };
+
+sw.Restart();
+foreach (var (row, pos) in caretPositions
+    .SelectMany(row => row.Value
+        .Where(pos => beamLocations2.Contains(pos))
+        .Select(pos => (row: row.Key, pos))))
+{
+    beamLocations2.Remove(pos);
+    beamLocations2.Add(pos - 1);
+    beamLocations2.Add(pos + 1);
+
+    beamPaths[pos - 1] += beamPaths[pos];
+    beamPaths[pos + 1] += beamPaths[pos];
+    beamPaths[pos] = 0;
+}
+
+sw.Stop();
+Console.WriteLine($"Total distinct beam paths (optimized): {beamPaths.Values.Sum()}");
+Console.WriteLine($"Part 2 Optimized Time: {sw.ElapsedMilliseconds}ms");
+
+// Part 2 2ms vs Part 2 Optimized 2ms on my machine 
